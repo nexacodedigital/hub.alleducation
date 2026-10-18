@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>All Hub - Smart Link Premium</title>
+    
+    <link id="appFavicon" rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2859/2859733.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { brand: { 50: '#eff6ff', 500: '#3b82f6', 600: '#2563eb', 900: '#1e3a8a' } }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; overflow-x: hidden; }
+        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.5); }
+        .bg-gradient-brand { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .slide-up { animation: slideUp 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .loader { border: 3px solid rgba(37, 99, 235, 0.2); border-radius: 50%; border-top: 3px solid #2563eb; animation: spin 0.8s linear infinite; }
+        .loader-white { border-top: 3px solid #fff; border-color: rgba(255,255,255,0.3); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Custom Animasi WA & Skeletons */
+        .floating-wa { animation: floatWa 3s ease-in-out infinite; }
+        @keyframes floatWa { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+        
+        .hover-scale { transition: transform 0.3s; } .hover-scale:hover { transform: scale(1.05); }
+        .hover-glow { transition: all 0.3s; } .hover-glow:hover { box-shadow: 0 0 20px rgba(37, 99, 235, 0.4); border-color: rgba(37, 99, 235, 0.3); }
+        
+        /* Drag & Drop Visuals */
+        .dragging { opacity: 0.5; background: #eff6ff; border: 2px dashed #3b82f6; }
+        
+        .hidden-spa { display: none !important; }
+        #toast { transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+    </style>
+</head>
+<body class="text-slate-800 antialiased selection:bg-blue-200 selection:text-blue-900">
+
+    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full shadow-2xl z-[100] flex items-center gap-3 opacity-0 pointer-events-none translate-y-[-20px]">
+        <i class="fa-solid fa-circle-info text-blue-400" id="toastIcon"></i>
+        <span id="toastMsg" class="text-sm font-medium"></span>
+    </div>
+
+    <div id="app" class="w-full min-h-screen relative">
+        
+        <!-- ================= LOGIN VIEW ================= -->
+        <div id="viewLogin" class="min-h-screen flex items-center justify-center p-4 bg-gray-50 hidden-spa relative">
+            <div class="glass w-full max-w-md rounded-3xl p-8 relative z-10 slide-up shadow-xl border border-gray-200">
+                <div class="text-center mb-8">
+                    <div class="w-16 h-16 bg-blue-600 rounded-2xl mx-auto flex items-center justify-center shadow-lg mb-4 hover-scale">
+                        <i class="fa-solid fa-link text-white text-3xl"></i>
+                    </div>
+                    <h1 class="text-3xl font-extrabold text-blue-900 tracking-tight">All Hub</h1>
+                    <p class="text-gray-500 text-sm mt-1">Smart Link Management</p>
+                </div>
+                <form id="loginForm" class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Username</label>
+                        <div class="relative focus-within:text-blue-600 text-gray-400">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="fa-solid fa-user"></i></div>
+                            <input type="text" id="username" required class="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 text-gray-800 bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all" placeholder="Masukkan username">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Password</label>
+                        <div class="relative focus-within:text-blue-600 text-gray-400">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="fa-solid fa-lock"></i></div>
+                            <input type="password" id="password" required class="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-300 text-gray-800 bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all" placeholder="••••••••">
+                            <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-blue-600 transition-colors">
+                                <i class="fa-solid fa-eye" id="eyeIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" id="btnLogin" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg hover-glow transition-all flex justify-center items-center gap-2 mt-2">
+                        <span>Masuk ke Dashboard</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ================= ADMIN DASHBOARD VIEW ================= -->
+        <div id="viewAdmin" class="min-h-screen bg-gray-50 hidden-spa flex flex-col md:flex-row">
+            <!-- Sidebar -->
+            <aside class="w-full md:w-64 bg-white border-r border-gray-200 flex flex-col shrink-0 z-20">
+                <div class="p-6 border-b border-gray-100 flex items-center gap-3">
+                    <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-md"><i class="fa-solid fa-link text-white text-lg"></i></div>
+                    <span class="font-extrabold text-xl text-blue-900">All Hub</span>
+                </div>
+                <nav class="flex-1 p-4 space-y-1">
+                    <button onclick="navigateAdmin('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl text-gray-600 hover:bg-blue-50 transition-colors">
+                        <i class="fa-solid fa-chart-pie w-5"></i> Dashboard
+                    </button>
+                    <button onclick="navigateAdmin('hubs')" id="nav-hubs" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl text-gray-600 hover:bg-blue-50 transition-colors">
+                        <i class="fa-solid fa-layer-group w-5"></i> Manajemen Hub
+                    </button>
+                    <button onclick="navigateAdmin('analytics')" id="nav-hubs" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl text-gray-600 hover:bg-blue-50 transition-colors">
+                        <i class="fa-solid fa-chart-line w-5"></i> Analytics
+                    </button>
+                    <button onclick="navigateAdmin('settings')" id="nav-settings" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl text-gray-600 hover:bg-blue-50 transition-colors">
+                        <i class="fa-solid fa-gear w-5"></i> Pengaturan
+                    </button>
+                </nav>
+                <div class="p-4 border-t border-gray-100">
+                    <div class="bg-blue-50 rounded-xl p-3 flex items-center gap-3 cursor-pointer hover:bg-blue-100 transition-colors" onclick="logout()">
+                        <div class="w-8 h-8 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center font-bold text-xs" id="adminAvatar">A</div>
+                        <div class="flex-1 overflow-hidden"><p class="text-sm font-bold text-blue-900 truncate" id="adminName">Admin</p><p class="text-[10px] text-blue-500">Administrator</p></div>
+                        <i class="fa-solid fa-power-off text-red-500 hover:scale-110 transition-transform"></i>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="flex-1 h-screen overflow-y-auto p-4 md:p-8 bg-gray-50">
+                
+                <!-- Section: Dashboard -->
+                <div id="sec-dashboard" class="hidden-spa fade-in space-y-6">
+                    <div><h2 class="text-2xl font-bold text-gray-800">Ringkasan Sistem</h2><p class="text-gray-500 text-sm mt-1">Performa Smart Link Anda hari ini.</p></div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-2xl border shadow-sm hover:shadow-md transition-shadow"><h3 class="text-3xl font-extrabold text-blue-600" id="statHubs">0</h3><p class="text-sm font-medium text-gray-500 mt-1">Total Hub Aktif</p></div>
+                        <div class="bg-white p-6 rounded-2xl border shadow-sm hover:shadow-md transition-shadow"><h3 class="text-3xl font-extrabold text-blue-600" id="statVisits">0</h3><p class="text-sm font-medium text-gray-500 mt-1">Total Pengunjung</p></div>
+                        <div class="bg-white p-6 rounded-2xl border shadow-sm hover:shadow-md transition-shadow"><h3 class="text-3xl font-extrabold text-blue-600" id="statClicks">0</h3><p class="text-sm font-medium text-gray-500 mt-1">Total Klik</p></div>
+                    </div>
+                </div>
+
+                <!-- Section: Analytics -->
+                <div id="sec-analytics" class="hidden-spa fade-in space-y-6">
+                    <div><h2 class="text-2xl font-bold text-gray-800">Analytics Hub</h2><p class="text-gray-500 text-sm mt-1">Pantau grafik interaksi pengunjung.</p></div>
+                    <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+                        <div class="w-full h-[300px] relative"><canvas id="analyticsChart"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- Section: Manajemen Hub -->
+                <div id="sec-hubs" class="hidden-spa fade-in space-y-6">
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-end gap-4">
+                        <div><h2 class="text-2xl font-bold text-gray-800">Manajemen Hub</h2><p class="text-gray-500 text-sm mt-1">Kelola halaman cerdas dan tautan Anda.</p></div>
+                        <button onclick="openHubModal()" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md hover:bg-blue-700 transition-colors flex items-center gap-2 justify-center"><i class="fa-solid fa-plus"></i> Buat Hub Baru</button>
+                    </div>
+                    <!-- Skeleton Loader Hubs -->
+                    <div id="hubsSkeleton" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden-spa">
+                        <div class="bg-white border p-5 rounded-2xl h-[160px] animate-pulse"><div class="flex gap-4"><div class="w-14 h-14 bg-gray-200 rounded-xl"></div><div class="flex-1"><div class="h-5 bg-gray-200 rounded w-3/4 mb-2"></div><div class="h-3 bg-gray-200 rounded w-1/2"></div></div></div><div class="mt-8 h-4 bg-gray-200 rounded w-full"></div></div>
+                        <div class="bg-white border p-5 rounded-2xl h-[160px] animate-pulse hidden sm:block"><div class="flex gap-4"><div class="w-14 h-14 bg-gray-200 rounded-xl"></div><div class="flex-1"><div class="h-5 bg-gray-200 rounded w-3/4 mb-2"></div><div class="h-3 bg-gray-200 rounded w-1/2"></div></div></div><div class="mt-8 h-4 bg-gray-200 rounded w-full"></div></div>
+                    </div>
+                    <div id="hubsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                </div>
+
+                <!-- Section: Manage Content -->
+                <div id="sec-content" class="hidden-spa fade-in space-y-6">
+                    <button onclick="navigateAdmin('hubs')" class="text-gray-500 hover:text-blue-600 text-sm font-semibold flex items-center gap-2 transition-colors"><i class="fa-solid fa-arrow-left"></i> Kembali ke Daftar Hub</button>
+                    <div class="bg-white border rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
+                        <div class="flex items-center gap-4">
+                            <div id="mgrHubLogo" class="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center overflow-hidden border border-blue-100 shrink-0"></div>
+                            <div class="overflow-hidden">
+                                <h2 class="text-xl font-bold text-gray-800 truncate" id="mgrHubTitle">...</h2>
+                                <a href="#" target="_blank" id="mgrHubLink" class="text-blue-500 hover:underline text-sm font-medium truncate block">...</a>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 w-full md:w-auto">
+                            <button onclick="openAppearanceModal()" class="flex-1 md:flex-none bg-white border border-gray-300 text-gray-700 px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"><i class="fa-solid fa-palette"></i> Tampilan</button>
+                            <button onclick="openContentModal()" class="flex-1 md:flex-none bg-blue-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-md hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"><i class="fa-solid fa-plus"></i> Tambah Item</button>
+                        </div>
+                    </div>
+                    <div class="bg-white border rounded-2xl overflow-hidden shadow-sm">
+                        <div class="p-4 border-b bg-gray-50 flex justify-between items-center">
+                            <h3 class="font-bold text-sm text-gray-700">Daftar Konten</h3>
+                            <span class="text-xs text-gray-400 flex items-center gap-1"><i class="fa-solid fa-arrows-up-down"></i> Drag untuk urutkan</span>
+                        </div>
+                        
+                        <!-- Skeleton Loader Content -->
+                        <div id="contentSkeleton" class="hidden-spa divide-y divide-gray-100">
+                            <div class="p-4 flex gap-4 animate-pulse"><div class="w-10 h-10 bg-gray-200 rounded-lg"></div><div class="flex-1"><div class="h-4 bg-gray-200 rounded w-1/3 mb-2"></div><div class="h-3 bg-gray-200 rounded w-1/2"></div></div></div>
+                            <div class="p-4 flex gap-4 animate-pulse"><div class="w-10 h-10 bg-gray-200 rounded-lg"></div><div class="flex-1"><div class="h-4 bg-gray-200 rounded w-1/4 mb-2"></div><div class="h-3 bg-gray-200 rounded w-2/3"></div></div></div>
+                        </div>
+                        
+                        <div id="contentListContainer" class="divide-y divide-gray-100 min-h-[100px]"></div>
+                    </div>
+                </div>
+
+                <!-- Section: PENGATURAN GLOBAL -->
+                <div id="sec-settings" class="hidden-spa fade-in space-y-6">
+                    <div><h2 class="text-2xl font-bold text-gray-800">Pengaturan Global</h2><p class="text-gray-500 text-sm mt-1">Atur Favicon dan Social Media utama. Akan tampil otomatis di semua Hub.</p></div>
+                    <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+                        <form id="formGlobalSettings" class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-1">Favicon Utama (URL Gambar/Ikon Web)</label>
+                                <input type="url" id="globalFavicon" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-colors" placeholder="https://... favicon.png">
+                            </div>
+                            <div class="border-t pt-4">
+                                <h4 class="font-bold text-sm text-gray-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-hashtag text-pink-500"></i>Social Media (Footer)</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="flex items-center border rounded-lg overflow-hidden focus-within:ring-2 focus-within:border-blue-600 ring-blue-600 transition-all"><span class="bg-gray-50 px-4 py-3 text-gray-600 border-r w-12 text-center"><i class="fa-brands fa-tiktok"></i></span><input type="url" id="gTiktok" placeholder="URL TikTok" class="w-full p-3 text-sm outline-none bg-white"></div>
+                                    <div class="flex items-center border rounded-lg overflow-hidden focus-within:ring-2 focus-within:border-blue-600 ring-blue-600 transition-all"><span class="bg-gray-50 px-4 py-3 text-gray-600 border-r w-12 text-center"><i class="fa-brands fa-instagram"></i></span><input type="url" id="gIg" placeholder="URL Instagram" class="w-full p-3 text-sm outline-none bg-white"></div>
+                                    <div class="flex items-center border rounded-lg overflow-hidden focus-within:ring-2 focus-within:border-blue-600 ring-blue-600 transition-all"><span class="bg-gray-50 px-4 py-3 text-gray-600 border-r w-12 text-center"><i class="fa-brands fa-youtube"></i></span><input type="url" id="gYt" placeholder="URL YouTube" class="w-full p-3 text-sm outline-none bg-white"></div>
+                                    <div class="flex items-center border rounded-lg overflow-hidden focus-within:ring-2 focus-within:border-blue-600 ring-blue-600 transition-all"><span class="bg-gray-50 px-4 py-3 text-gray-600 border-r w-12 text-center"><i class="fa-brands fa-linkedin"></i></span><input type="url" id="gIn" placeholder="URL LinkedIn" class="w-full p-3 text-sm outline-none bg-white"></div>
+                                    <!-- Ikon Logo Threads Custom -->
+                                    <div class="flex items-center border rounded-lg overflow-hidden focus-within:ring-2 focus-within:border-blue-600 ring-blue-600 transition-all"><span class="bg-gray-50 px-4 py-3 text-gray-800 border-r w-12 text-center"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="mx-auto" viewBox="0 0 16 16"><path d="M12.924 1.107A7.51 7.51 0 0 0 8 0 7.51 7.51 0 0 0 3.076 1.107 7.5 7.5 0 0 0 0 5.626a7.51 7.51 0 0 0 1.107 4.924 7.51 7.51 0 0 0 4.924 3.076A7.5 7.5 0 0 0 8 16a7.51 7.51 0 0 0 4.924-1.107 7.51 7.51 0 0 0 3.076-4.924A7.5 7.5 0 0 0 16 5.626a7.51 7.51 0 0 0-1.107-4.924zm-4.924 9.873a4.98 4.98 0 1 1 0-9.96 4.98 4.98 0 0 1 0 9.96z"/></svg></span><input type="url" id="gThreads" placeholder="URL Threads" class="w-full p-3 text-sm outline-none bg-white"></div>
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 px-8 text-sm font-bold shadow-md transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-save"></i> Simpan Pengaturan Global
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- ================= PUBLIC VIEW (Linktree Style) ================= -->
+        <div id="viewPublic" class="min-h-screen hidden-spa relative flex flex-col items-center py-12 px-4 overflow-x-hidden transition-colors duration-500 bg-gray-50">
+            <div class="relative z-10 w-full max-w-lg flex flex-col items-center">
+                
+                <!-- Wrapper Logo - Loading Instan 0 Detik -->
+                <div id="pubLogoWrapper" class="w-24 h-24 md:w-28 md:h-28 rounded-full border-4 border-white shadow-xl overflow-hidden mb-5 bg-white shrink-0 slide-up fade-in flex items-center justify-center transition-all duration-300 shadow-blue-500/50">
+                    <div class="loader loader-white w-10 h-10 border-blue-600 border-t-blue-200"></div>
+                </div>
+                
+                <div class="text-center mb-8 px-4 w-full slide-up fade-in" style="animation-delay: 0.1s;">
+                    <h1 id="pubTitle" class="text-2xl font-extrabold mb-1 tracking-tight text-blue-600 animate-pulse">Mohon Tunggu...</h1>
+                    <p id="pubDesc" class="font-medium text-sm max-w-md mx-auto text-gray-500">Please wait, loading data...</p>
+                </div>
+                
+                <!-- Links Container -->
+                <div id="pubLinks" class="flex-1 space-y-4 flex flex-col items-center w-full slide-up min-h-[200px]">
+                    <div class="flex flex-col items-center justify-center mt-12 mb-12 fade-in">
+                        <div class="relative w-16 h-16 flex items-center justify-center">
+                            <div class="absolute inset-0 border-4 border-blue-100 rounded-full"></div>
+                            <div class="absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
+                            <i class="fa-solid fa-bolt text-blue-600 text-xl animate-pulse"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Social Media Footer -->
+                <div id="pubSocials" class="flex justify-center gap-4 mt-10 slide-up flex-wrap"></div>
+                
+                <!-- Branding -->
+                <div class="mt-12 text-center pb-6 fade-in opacity-80">
+                    <a href="#" class="inline-flex items-center gap-2 font-bold text-lg hover:scale-105 transition-transform text-gray-800" id="pubFooterText">
+                        <div class="w-6 h-6 bg-blue-600 rounded-md flex items-center justify-center shadow-md"><i class="fa-solid fa-bolt text-white text-xs"></i></div>
+                        All Hub
+                    </a>
+                    <p class="text-xs mt-1 font-medium text-gray-500" id="pubFooterSub">Powered by All Education Indonesia</p>
+                </div>
+            </div>
+            
+            <!-- CS Floating WhatsApp (Gerak-gerak / Pulse) -->
+            <a id="floatingWA" href="#" target="_blank" class="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2 group floating-wa hidden-spa">
+                <div class="bg-white text-blue-600 px-4 py-2 rounded-full text-xs font-bold shadow-lg flex items-center gap-2 border border-blue-100">
+                    <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span></span>
+                    CS 24 Jam
+                </div>
+                <div class="bg-gradient-to-r from-green-400 to-green-600 text-white w-14 h-14 rounded-full shadow-xl flex items-center justify-center hover:scale-110 transition-transform">
+                    <i class="fa-brands fa-whatsapp text-3xl"></i>
+                </div>
+            </a>
+        </div>
+
+        <!-- ================= MODALS ================= -->
+        <div id="modalOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[45] hidden-spa transition-opacity duration-300" onclick="closeModals()"></div>
+        
+        <!-- Modal Hapus -->
+        <div id="modalDelete" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[50] hidden-spa w-full max-w-sm px-4">
+            <div class="bg-white rounded-3xl shadow-2xl p-6 text-center slide-up transform transition-all">
+                <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <h3 class="font-bold text-gray-800 text-lg mb-2">Hapus Item Ini?</h3>
+                <p class="text-sm text-gray-500 mb-6">Tindakan ini permanen dan tidak dapat dibatalkan.</p>
+                <div class="flex gap-3">
+                    <button onclick="closeModals()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-bold transition-colors">Batal</button>
+                    <button id="btnExecuteDelete" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-bold transition-colors">Ya, Hapus</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal QR Code -->
+        <div id="modalQR" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[50] hidden-spa w-full max-w-sm px-4">
+            <div class="bg-white rounded-3xl shadow-2xl p-6 text-center slide-up relative">
+                <button onclick="closeModals()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <h3 class="font-bold text-gray-800 mb-1 text-lg">QR Code Hub</h3>
+                <p class="text-xs text-gray-500 mb-5">Scan untuk membuka halaman</p>
+                <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 inline-block mb-4">
+                    <div id="qrContainer" class="flex justify-center mx-auto shadow-sm"></div>
+                </div>
+                <div class="bg-blue-50 text-blue-600 rounded-lg py-2 px-3 mb-4 mx-4 border border-blue-100">
+                    <p class="text-[11px] font-bold truncate" id="qrUrlText"></p>
+                </div>
+                <button onclick="downloadQR()" class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 font-bold shadow-md transition-colors flex justify-center items-center gap-2"><i class="fa-solid fa-download"></i> Download PNG</button>
+            </div>
+        </div>
+
+        <!-- Modal Hub Baru -->
+        <div id="modalHub" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[50] hidden-spa w-full max-w-md px-4">
+            <div class="bg-white rounded-3xl p-6 slide-up shadow-2xl relative">
+                <div class="flex justify-between items-center mb-5"><h3 class="font-bold text-xl text-gray-800">Buat Hub Baru</h3><button onclick="closeModals()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button></div>
+                <form id="formHub" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Judul Hub</label>
+                        <input type="text" id="hubTitle" required class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all" placeholder="Misal: Mangemen Tutor">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Slug URL</label>
+                        <div class="flex border border-gray-300 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-600 focus-within:border-blue-600 transition-all bg-white">
+                            <span class="bg-gray-50 px-3 py-3 text-gray-500 text-sm border-r select-none">hub.alleducenter.com/#/</span>
+                            <input type="text" id="hubSlug" required class="w-full p-3 text-sm outline-none bg-transparent" placeholder="tutor">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 font-bold mt-2 shadow-md transition-colors">Simpan Hub</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Modal Tambah/Edit Item Konten -->
+        <div id="modalContent" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[50] hidden-spa w-full max-w-md max-h-[90vh] flex flex-col px-4">
+            <div class="bg-white rounded-3xl p-6 slide-up shadow-2xl overflow-y-auto relative">
+                <div class="flex justify-between items-center mb-5"><h3 class="font-bold text-xl text-gray-800" id="modalContentTitle">Tambah Item</h3><button type="button" onclick="closeModals()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button></div>
+                <form id="formContent" class="space-y-4">
+                    <div><label class="block text-sm font-bold text-gray-700 mb-1">Tipe Konten</label><select id="contentType" onchange="handleTypeChange()" class="w-full border border-gray-300 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-blue-600 outline-none"><option value="link">Link Tautan Biasa</option><option value="header">Judul / Pemisah Kategori</option><option value="pdf">PDF Viewer Internal</option></select></div>
+                    <div><label class="block text-sm font-bold text-gray-700 mb-1">Judul Tombol / Konten</label><input type="text" id="contentTitle" required class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-600 outline-none" placeholder="Misal: Info Promo"></div>
+                    <div id="wrapUrl"><label class="block text-sm font-bold text-gray-700 mb-1">URL / Tautan Sumber</label><input type="url" id="contentUrl" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-600 outline-none" placeholder="https://..."></div>
+                    <div id="wrapAction"><label class="block text-sm font-bold text-gray-700 mb-1">Aksi Klik</label><select id="contentAction" class="w-full border border-gray-300 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-blue-600 outline-none"><option value="blank">Buka di Tab Baru</option><option value="modal">Buka di Modal Viewer</option></select></div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 font-bold mt-2 shadow-md transition-colors">Simpan Item</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal Tampilan -->
+        <div id="modalAppearance" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[50] hidden-spa w-full max-w-md max-h-[90vh] flex flex-col px-4">
+            <div class="bg-white rounded-3xl shadow-2xl overflow-hidden slide-up flex flex-col max-h-full">
+                <div class="px-6 py-5 border-b flex justify-between items-center bg-gray-50"><h3 class="font-bold text-xl text-gray-800">Tampilan & Identitas</h3><button onclick="closeModals()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button></div>
+                <div class="p-6 overflow-y-auto flex-1">
+                    <form id="formAppearance" class="space-y-5">
+                        <input type="hidden" id="appHubId">
+                        
+                        <div class="space-y-4">
+                            <h4 class="font-bold text-sm text-gray-800 border-b pb-2">Identitas Utama</h4>
+                            <div><label class="block text-sm font-bold text-gray-700 mb-1">Logo / Profil (URL)</label><input type="text" id="appLogo" placeholder="https://..." class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-600 outline-none transition-all"></div>
+                            <div><label class="block text-sm font-bold text-gray-700 mb-1">Nama Lembaga / Judul</label><input type="text" id="appTitle" required class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-600 outline-none transition-all"></div>
+                            <div><label class="block text-sm font-bold text-gray-700 mb-1">Deskripsi Singkat</label><textarea id="appDesc" rows="2" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-600 outline-none transition-all"></textarea></div>
+                            <div><label class="block text-sm font-bold text-gray-700 mb-1">No. WA Customer Service</label><input type="text" id="appWa" placeholder="Misal: 628123456789" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-600 outline-none transition-all"></div>
+                        </div>
+                        
+                        <div class="border-t pt-5 space-y-4">
+                            <h4 class="font-bold text-sm text-gray-800 border-b pb-2">Tema & Warna</h4>
+                            <div><label class="block text-sm font-bold text-gray-700 mb-1">Background Tema</label><select id="appBg" class="w-full border border-gray-300 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-blue-600 outline-none"><option value="bg-blue-600">All Edu Blue (Solid)</option><option value="bg-gray-100">Abu Minimalist</option><option value="bg-slate-900">Dark Mode Eksekutif</option><option value="bg-gradient-to-br from-blue-400 to-blue-600">Gradasi Cerah (Premium)</option><option value="bg-gradient-to-br from-indigo-500 to-purple-500">Gradasi Ungu Premium</option></select></div>
+                            <div><label class="block text-sm font-bold text-gray-700 mb-1">Bentuk Tombol Link</label><select id="appShape" class="w-full border border-gray-300 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-blue-600 outline-none"><option value="rounded-full">Lonjong (Pill)</option><option value="rounded-2xl">Kotak Melengkung</option><option value="rounded-md">Kotak Tegas</option></select></div>
+                            <div><label class="block text-sm font-bold text-gray-700 mb-1">Warna Teks Utama</label><select id="appTextColor" class="w-full border border-gray-300 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-blue-600 outline-none"><option value="text-gray-900">Gelap (Untuk Background Terang)</option><option value="text-white">Putih (Untuk Background Gelap)</option></select></div>
+                            <div><label class="block text-sm font-bold text-gray-700 mb-1">Animasi Tombol Link</label><select id="appAnim" class="w-full border border-gray-300 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-blue-600 outline-none"><option value="hover:-translate-y-1 hover:shadow-lg">Melayang Naik (Float)</option><option value="hover:scale-105 hover:shadow-lg">Membesar (Scale)</option><option value="hover:shadow-xl">Hanya Shadow (Bayangan)</option></select></div>
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3.5 font-bold mt-4 shadow-md transition-all flex items-center justify-center gap-2"><i class="fa-solid fa-save"></i> Simpan Pengaturan Tampilan</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // UBAH IS_PREVIEW KE false AGAR DATA MENARIK DARI GOOGLE SHEETS
+        const IS_PREVIEW = false; 
+        const GAS_URL = "https://script.google.com/macros/s/AKfycby84bWADSKSjmNBvTQCT9v6Px3FbTxFex6623ByemdZlUnb9Re2Ec5kVsR0tujG80At/exec";
+
+        // 👇👇 MASUKKAN URL LOGO UNTUK LOADING DI SINI 👇👇
+        const LOGO_LOADING_MANUAL = "https://iili.io/CMttawP.md.png"; 
+        // 👆👆 Ganti link di atas dengan link gambar logo Anda (Pastikan berakhiran .png / .jpg) 👆👆
+
+        let state = { 
+            token: localStorage.getItem('ah_token'), 
+            user: JSON.parse(localStorage.getItem('ah_user')), 
+            hubs: [], 
+            contents: [],
+            globalSettings: null,
+            currentHubId: null, 
+            deleteType: null, 
+            deleteId: null,
+            editingContentId: null
+        };
+
+        // --- UTILS ---
+        function showToast(msg, type='success') {
+            const t = document.getElementById('toast'); document.getElementById('toastMsg').innerText = msg;
+            t.className = `fixed top-5 left-1/2 -translate-x-1/2 text-white px-6 py-3 rounded-full shadow-2xl z-[100] flex items-center gap-3 transition-all duration-300 ${type==='error'?'bg-red-600':'bg-gray-900'}`;
+            document.getElementById('toastIcon').className = `fa-solid fa-circle-info ${type==='error'?'text-white':'text-blue-400'}`;
+            setTimeout(() => { t.classList.add('opacity-0', 'translate-y-[-20px]'); }, 3000);
+        }
+
+        function switchView(viewName) {
+            ['viewLogin', 'viewAdmin', 'viewPublic'].forEach(v => document.getElementById(v).classList.add('hidden-spa'));
+            document.getElementById('view' + viewName.charAt(0).toUpperCase() + viewName.slice(1)).classList.remove('hidden-spa');
+        }
+
+        function closeModals() { 
+            document.getElementById('modalOverlay').classList.add('hidden-spa');
+            document.querySelectorAll('.fixed.z-\\[50\\]').forEach(m => m.classList.add('hidden-spa')); 
+        }
+
+        function openModal(modalId) {
+            document.getElementById('modalOverlay').classList.remove('hidden-spa');
+            document.getElementById(modalId).classList.remove('hidden-spa');
+        }
+
+        // --- ADMIN ROUTING & AUTH ---
+        function navigateAdmin(sec) {
+            ['sec-dashboard', 'sec-hubs', 'sec-content', 'sec-analytics', 'sec-settings'].forEach(s => document.getElementById(s).classList.add('hidden-spa'));
+            document.getElementById('sec-' + sec).classList.remove('hidden-spa');
+            document.querySelectorAll('#nav-dashboard, #nav-hubs, #nav-analytics, #nav-settings').forEach(el => { el.classList.remove('bg-blue-50', 'text-blue-700'); el.classList.add('text-gray-600'); });
+            const nav = document.getElementById('nav-' + sec); if(nav) nav.classList.add('bg-blue-50', 'text-blue-700');
+            
+            if(sec === 'settings') loadGlobalSettings();
+            if(sec === 'analytics') initAnalyticsChart();
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); const u = document.getElementById('username').value, p = document.getElementById('password').value, btn = document.getElementById('btnLogin');
+            btn.innerHTML = `<div class="loader loader-white w-5 h-5 mx-auto"></div>`;
+            try {
+                if(!IS_PREVIEW) {
+                    const res = await fetch(`${GAS_URL}?action=login`, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'login', username: u, password: p }) });
+                    const r = await res.json();
+                    if(r.success) { state.token = r.token; state.user = r.user; localStorage.setItem('ah_token', r.token); localStorage.setItem('ah_user', JSON.stringify(r.user)); showToast('Login sukses'); initApp(); }
+                    else showToast(r.message, 'error');
+                } else {
+                    if(u==='admin' && p==='admin2026') { state.token = "DUMMY"; localStorage.setItem('ah_token', "DUMMY"); initApp(); } else showToast('Mode Dummy: Coba admin/admin2026', 'error');
+                }
+            } catch(e) { showToast('Koneksi Error. Pastikan URL GAS benar dan di-deploy Anyone.', 'error'); } finally { btn.innerHTML = 'Masuk ke Dashboard'; }
+        });
+        
+        function logout() { localStorage.removeItem('ah_token'); state.token=null; initApp(); }
+        function togglePassword() { const p = document.getElementById('password'); p.type = p.type === 'password'?'text':'password'; }
+
+        async function loadHubs() {
+            if(state.hubs.length > 0) renderHubs(state.hubs);
+            else {
+                document.getElementById('hubsContainer').innerHTML = '';
+                document.getElementById('hubsSkeleton').classList.remove('hidden-spa');
+            }
+            
+            if(IS_PREVIEW) {
+                document.getElementById('hubsSkeleton').classList.add('hidden-spa');
+                if(state.hubs.length === 0) renderHubs([]);
+                return; 
+            }
+            
+            try {
+                const res = await fetch(`${GAS_URL}?action=getHubs`, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'getHubs', token: state.token }) });
+                const r = await res.json();
+                document.getElementById('hubsSkeleton').classList.add('hidden-spa');
+                if(r.success) { state.hubs = r.hubs; document.getElementById('statHubs').innerText = r.hubs.length; renderHubs(r.hubs); }
+                else {
+                    if (r.message && r.message.toLowerCase().includes('token')) { logout(); showToast('Sesi habis, silakan login ulang', 'error'); }
+                    else showToast(r.message, 'error');
+                }
+            } catch(e) { 
+                document.getElementById('hubsSkeleton').classList.add('hidden-spa');
+                showToast('Gagal menarik data dari Google Sheets. Cek koneksi internet.', 'error'); 
+            }
+        }
+
+        function renderHubs(hubs) {
+            const container = document.getElementById('hubsContainer');
+            if(hubs.length === 0) { container.innerHTML = "<p class='text-gray-500 text-sm'>Belum ada Hub yang dibuat.</p>"; return; }
+            container.innerHTML = hubs.map(h => `
+                <div class="bg-white border p-5 rounded-3xl relative hover:shadow-lg transition-shadow group flex flex-col justify-between h-full fade-in">
+                    <button onclick="confirmDelete('hub', '${h.id}')" class="absolute top-4 right-4 w-8 h-8 bg-red-50 text-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white transition-all"><i class="fa-solid fa-trash text-xs"></i></button>
+                    <div class="flex gap-4 items-center cursor-pointer" onclick="openManageContent('${h.id}')">
+                        <div class="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center overflow-hidden border border-blue-200 shrink-0">${h.logo ? `<img src="${h.logo}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-globe text-blue-500 text-2xl"></i>`}</div>
+                        <div class="overflow-hidden"><h3 class="font-bold text-lg text-blue-900 leading-tight truncate">${h.title}</h3><p class="text-xs text-gray-500 mt-1 font-medium truncate">/${h.slug}</p></div>
+                    </div>
+                    <div class="mt-5 pt-4 border-t border-gray-100 flex justify-between items-center">
+                        <a href="#/${h.slug}" target="_blank" class="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1"><i class="fa-solid fa-arrow-up-right-from-square"></i> Lihat Hub</a>
+                        <button onclick="generateQR('hub.alleducenter.com/#/${h.slug}')" class="text-gray-400 hover:text-blue-600 transition-colors bg-gray-50 hover:bg-blue-50 w-8 h-8 rounded-lg flex items-center justify-center"><i class="fa-solid fa-qrcode"></i></button>
+                    </div>
+                </div>`).join('');
+        }
+        
+        function openHubModal() { document.getElementById('formHub').reset(); openModal('modalHub'); }
+        
+        document.getElementById('formHub').addEventListener('submit', (e) => {
+            e.preventDefault(); 
+            const title = document.getElementById('hubTitle').value;
+            const slug = document.getElementById('hubSlug').value;
+            const newHubId = "HUB-" + Date.now();
+            
+            // OPTIMISTIC UPDATE (0 DETIK)
+            const newHub = { id: newHubId, slug: slug, title: title, desc: "", logo: "", theme: JSON.stringify({ bg: 'bg-blue-600', text: 'text-gray-900', anim: 'hover:-translate-y-1 hover:shadow-lg', shape: 'rounded-2xl', wa: '' }), status: "Active" };
+            
+            state.hubs.unshift(newHub);
+            renderHubs(state.hubs);
+            document.getElementById('statHubs').innerText = state.hubs.length;
+            closeModals();
+            showToast('Hub Dibuat!');
+            
+            if(!IS_PREVIEW) {
+                try {
+                    fetch(`${GAS_URL}?action=createHub`, { 
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({ action: 'createHub', token: state.token, hubData: {id: newHubId, title: title, slug: slug} }) 
+                    }).then(res => res.json()).then(r => { 
+                        if(!r.success) showToast(r.message, 'error'); 
+                        else if (r.hubId) {
+                            // Sinkronisasi ID lokal dengan ID dari Google Sheets (Backend)
+                            const idx = state.hubs.findIndex(h => h.id === newHubId);
+                            if(idx > -1) state.hubs[idx].id = r.hubId;
+                        }
+                    }).catch(e => {});
+                } catch(err) {}
+            }
+        });
+
+        // --- MANAJEMEN KONTEN & ITEM ---
+        function openManageContent(id) {
+            state.currentHubId = id; const h = state.hubs.find(x => x.id === id);
+            if(!h) return;
+            document.getElementById('mgrHubTitle').innerText = h.title;
+            document.getElementById('mgrHubLink').href = `#/${h.slug}`;
+            document.getElementById('mgrHubLink').innerText = `hub.alleducenter.com/#/${h.slug}`;
+            
+            document.getElementById('mgrHubLogo').innerHTML = h.logo ? `<img src="${h.logo}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-globe text-blue-500 text-2xl"></i>`;
+            navigateAdmin('content'); loadContents(id);
+        }
+        
+        async function loadContents(id) {
+            if(state.contents.length > 0 && state.contents[0].hubId === id) renderContentList(state.contents);
+            else {
+                document.getElementById('contentListContainer').innerHTML = '';
+                document.getElementById('contentSkeleton').classList.remove('hidden-spa');
+            }
+            if(IS_PREVIEW) {
+                document.getElementById('contentSkeleton').classList.add('hidden-spa');
+                if(state.contents.length === 0 || state.contents[0]?.hubId !== id) renderContentList([]);
+                return;
+            }
+            try {
+                const res = await fetch(`${GAS_URL}?action=getContents`, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'getContents', token: state.token, hubId: id }) });
+                const r = await res.json();
+                document.getElementById('contentSkeleton').classList.add('hidden-spa');
+                if(r.success) { state.contents = r.contents.sort((a,b) => a.OrderIndex - b.OrderIndex); renderContentList(state.contents); }
+            } catch(e) {
+                document.getElementById('contentSkeleton').classList.add('hidden-spa');
+                showToast('Gagal memuat konten. Coba refresh.', 'error');
+            }
+        }
+
+        function renderContentList(items) {
+            const cont = document.getElementById('contentListContainer');
+            if(items.length === 0) { cont.innerHTML = `<div class="p-8 text-center text-gray-500 text-sm fade-in">Belum ada item konten. Klik "Tambah Item" untuk memulai.</div>`; return; }
+            cont.innerHTML = items.map((item, index) => `
+                <div class="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors border-b group bg-white fade-in" draggable="true" ondragstart="dragStart(event, ${index})" ondragover="dragOver(event)" ondrop="drop(event, ${index})" ondragend="dragEnd(event)">
+                    <div class="flex items-center gap-4 flex-1">
+                        <div class="cursor-move text-gray-300 hover:text-blue-500 py-2 px-2"><i class="fa-solid fa-grip-vertical"></i></div>
+                        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100 font-bold"><i class="fa-solid ${item.icon}"></i></div>
+                        <div class="overflow-hidden">
+                            <p class="text-sm font-bold text-gray-800 truncate">${item.title}</p>
+                            <p class="text-xs text-gray-400 truncate">${item.type==='header'?'Judul':item.url}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="editContent('${item.id}')" class="w-8 h-8 rounded-lg bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-600 flex items-center justify-center transition-colors"><i class="fa-solid fa-pen text-xs"></i></button>
+                        <button onclick="confirmDelete('content', '${item.id}')" class="w-8 h-8 rounded-lg bg-gray-100 text-gray-600 hover:bg-red-100 hover:text-red-500 flex items-center justify-center transition-colors"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </div>
+                </div>`).join('');
+        }
+
+        let draggedIdx = null;
+        function dragStart(e, index) { draggedIdx = index; e.target.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; }
+        function dragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+        function dragEnd(e) { e.target.classList.remove('dragging'); }
+        function drop(e, targetIdx) {
+            e.preventDefault(); e.target.closest('div[draggable]').classList.remove('dragging');
+            if(draggedIdx === null || draggedIdx === targetIdx) return;
+            const item = state.contents.splice(draggedIdx, 1)[0];
+            state.contents.splice(targetIdx, 0, item);
+            state.contents.forEach((c, idx) => c.OrderIndex = idx);
+            renderContentList(state.contents);
+            if(!IS_PREVIEW) fetch(`${GAS_URL}?action=updateContentOrder`, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'updateContentOrder', token: state.token, orderData: state.contents.map(c => ({id: c.id, order: c.OrderIndex})) }) });
+        }
+
+        function openContentModal() { state.editingContentId = null; document.getElementById('modalContentTitle').innerText = "Tambah Item"; document.getElementById('formContent').reset(); openModal('modalContent'); handleTypeChange(); }
+        
+        function editContent(id) {
+            const item = state.contents.find(c => c.id === id); if(!item) return;
+            state.editingContentId = id; document.getElementById('modalContentTitle').innerText = "Edit Item";
+            document.getElementById('contentType').value = item.type; handleTypeChange();
+            document.getElementById('contentTitle').value = item.title;
+            document.getElementById('contentUrl').value = (item.url === '#' || !item.url) ? '' : item.url;
+            if(item.type !== 'header') document.getElementById('contentAction').value = item.action || 'blank';
+            openModal('modalContent');
+        }
+
+        function handleTypeChange() {
+            const t = document.getElementById('contentType').value;
+            if(t==='header') { document.getElementById('wrapUrl').style.display='none'; document.getElementById('wrapAction').style.display='none'; }
+            else { document.getElementById('wrapUrl').style.display='block'; document.getElementById('wrapAction').style.display='block'; }
+        }
+
+        document.getElementById('formContent').addEventListener('submit', (e) => {
+            e.preventDefault(); 
+            const t = document.getElementById('contentType').value; 
+            const icon = {'header':'fa-heading', 'link':'fa-link', 'pdf':'fa-file-pdf'}[t]||'fa-link';
+            const isEdit = !!state.editingContentId;
+            const tempId = isEdit ? state.editingContentId : ("CNT-" + Date.now()); 
+            
+            const data = { id: tempId, hubId: state.currentHubId, type: t, title: document.getElementById('contentTitle').value, url: document.getElementById('contentUrl').value || '#', action: t==='header'?'none':document.getElementById('contentAction').value, icon: icon, OrderIndex: isEdit ? state.contents.find(c=>c.id===tempId).OrderIndex : state.contents.length };
+
+            if(isEdit) { const idx = state.contents.findIndex(c => c.id === tempId); if(idx>-1) state.contents[idx] = data; } 
+            else state.contents.push(data);
+            
+            renderContentList(state.contents); // Update UI Instan (0 Detik)
+            closeModals();
+            
+            if(!IS_PREVIEW) {
+                const action = isEdit ? 'updateContent' : 'saveContent';
+                fetch(`${GAS_URL}?action=${action}`, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: action, token: state.token, contentData: data }) });
+            }
+        });
+
+        function confirmDelete(type, id) { state.deleteType = type; state.deleteId = id; openModal('modalDelete'); }
+        document.getElementById('btnExecuteDelete').addEventListener('click', () => {
+            if(state.deleteType === 'content') { state.contents = state.contents.filter(c => c.id !== state.deleteId); renderContentList(state.contents); } 
+            else if (state.deleteType === 'hub') { state.hubs = state.hubs.filter(h => h.id !== state.deleteId); renderHubs(state.hubs); document.getElementById('statHubs').innerText = state.hubs.length; navigateAdmin('hubs'); }
+            closeModals(); showToast('Dihapus!');
+            if(!IS_PREVIEW) {
+                const action = state.deleteType === 'hub' ? 'deleteHub' : 'deleteContent';
+                const payload = state.deleteType === 'hub' ? {hubId: state.deleteId} : {contentId: state.deleteId};
+                fetch(`${GAS_URL}?action=${action}`, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: action, token: state.token, ...payload }) });
+            }
+        });
+
+        // --- TAMPILAN HUB & PENGATURAN GLOBAL ---
+        function openAppearanceModal() {
+            const h = state.hubs.find(x => x.id === state.currentHubId);
+            if(!h) return;
+            document.getElementById('appHubId').value = h.id; document.getElementById('appTitle').value = h.title;
+            document.getElementById('appLogo').value = h.logo||''; document.getElementById('appDesc').value = h.desc||'';
+            let t = {bg:'bg-blue-600', text:'text-gray-900', anim:'hover:-translate-y-1 hover:shadow-lg', shape:'rounded-full', wa:''}; try { t = JSON.parse(h.theme||'{}'); }catch(e){}
+            document.getElementById('appBg').value = t.bg||'bg-blue-600'; document.getElementById('appShape').value = t.shape||'rounded-full';
+            document.getElementById('appTextColor').value = t.text||'text-gray-900'; document.getElementById('appAnim').value = t.anim||'hover:-translate-y-1 hover:shadow-lg';
+            document.getElementById('appWa').value = t.wa||'';
+            openModal('modalAppearance');
+        }
+
+        document.getElementById('formAppearance').addEventListener('submit', (e) => {
+            e.preventDefault(); 
+            const data = { hubId: document.getElementById('appHubId').value, title: document.getElementById('appTitle').value, desc: document.getElementById('appDesc').value, logo: document.getElementById('appLogo').value, theme: { bg: document.getElementById('appBg').value, text: document.getElementById('appTextColor').value, anim: document.getElementById('appAnim').value, shape: document.getElementById('appShape').value, wa: document.getElementById('appWa').value } };
+            const idx = state.hubs.findIndex(h => h.id === data.hubId);
+            if(idx > -1) { 
+                state.hubs[idx].title = data.title; 
+                state.hubs[idx].logo = data.logo; 
+                state.hubs[idx].desc = data.desc; // Perbaikan: Deskripsi tidak hilang lagi saat disimpan
+                state.hubs[idx].theme = JSON.stringify(data.theme); 
+            }
+            closeModals(); openManageContent(state.currentHubId); showToast('Tampilan Disimpan!'); 
+            if(!IS_PREVIEW) fetch(`${GAS_URL}?action=updateAppearance`, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'updateAppearance', token: state.token, appData: data }) });
+        });
+
+        async function loadGlobalSettings() {
+            if(state.globalSettings) fillGlobalSettings(state.globalSettings);
+            if(IS_PREVIEW) return;
+            try {
+                const res = await fetch(`${GAS_URL}?action=getSettings`, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'getSettings', token: state.token }) });
+                const r = await res.json();
+                if(r.success) { state.globalSettings = r.settings; fillGlobalSettings(r.settings); }
+            } catch(e) {}
+        }
+        
+        function fillGlobalSettings(s) {
+            document.getElementById('globalFavicon').value = s.favicon || ''; document.getElementById('gTiktok').value = s.socials?.tiktok || '';
+            document.getElementById('gIg').value = s.socials?.ig || ''; document.getElementById('gYt').value = s.socials?.yt || '';
+            document.getElementById('gIn').value = s.socials?.in || ''; document.getElementById('gThreads').value = s.socials?.threads || '';
+        }
+
+        document.getElementById('formGlobalSettings').addEventListener('submit', (e) => {
+            e.preventDefault(); 
+            const data = { favicon: document.getElementById('globalFavicon').value, socials: { tiktok: document.getElementById('gTiktok').value, ig: document.getElementById('gIg').value, yt: document.getElementById('gYt').value, in: document.getElementById('gIn').value, threads: document.getElementById('gThreads').value } };
+            state.globalSettings = data; showToast('Pengaturan Global Disimpan!');
+            if(!IS_PREVIEW) fetch(`${GAS_URL}?action=saveSettings`, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveSettings', token: state.token, settings: data }) });
+        });
+
+        let myChart = null;
+        function initAnalyticsChart() {
+            const ctx = document.getElementById('analyticsChart'); if(!ctx) return;
+            if(myChart) myChart.destroy();
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'], datasets: [{ label: 'Pengunjung Hub', data: [15, 30, 25, 45, 60, 55, 80], borderColor: '#2563eb', tension: 0.4, fill: true, backgroundColor: 'rgba(37, 99, 235, 0.1)' }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+
+        // --- HALAMAN PUBLIK (LOADING PREMIUM 0 DETIK & CACHING) ---
+        async function loadPublicHub(slug) {
+            switchView('public');
+            
+            const cacheKey = 'ah_pub_cache_' + slug;
+            const cachedData = localStorage.getItem(cacheKey);
+            
+            // Jika ada cache lokal, tampilkan LANGSUNG (0 Detik Nyata) untuk Customer
+            if (cachedData) {
+                try {
+                    const parsed = JSON.parse(cachedData);
+                    document.getElementById('pubLogoWrapper').classList.remove('animate-pulse', 'shadow-blue-500/50');
+                    renderPublicHub(parsed.hub, parsed.contents, parsed.globalSettings);
+                } catch(e) {}
+            } else {
+                // Animasi Loading untuk pengunjung pertama kali
+                document.getElementById('pubLogoWrapper').innerHTML = `<img src="${LOGO_LOADING_MANUAL}" class="w-full h-full object-cover">`;
+                document.getElementById('pubLogoWrapper').classList.add('animate-pulse', 'shadow-blue-500/50');
+                
+                document.getElementById('pubTitle').innerText = "Mohon Tunggu...";
+                document.getElementById('pubTitle').className = "text-2xl font-extrabold mb-1 tracking-tight text-blue-600 animate-pulse";
+                document.getElementById('pubDesc').innerText = "Please wait, loading data...";
+                document.getElementById('pubDesc').className = "font-medium text-sm max-w-md mx-auto text-gray-500";
+                
+                document.getElementById('pubLinks').innerHTML = `<div class="flex flex-col items-center justify-center mt-12 mb-12 fade-in"><div class="relative w-16 h-16 flex items-center justify-center"><div class="absolute inset-0 border-4 border-blue-100 rounded-full"></div><div class="absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div><i class="fa-solid fa-bolt text-blue-600 text-xl animate-pulse"></i></div></div>`;
+                document.getElementById('pubSocials').innerHTML = '';
+                document.getElementById('floatingWA').classList.add('hidden-spa');
+            }
+            
+            if(!IS_PREVIEW) {
+                try {
+                    const res = await fetch(`${GAS_URL}?action=getHubBySlug&slug=${slug}`);
+                    const r = await res.json();
+                    
+                    document.getElementById('pubLogoWrapper').classList.remove('animate-pulse', 'shadow-blue-500/50');
+                    
+                    if(r.success) {
+                        // Simpan ke Cache Lokal HP Customer agar buka selanjutnya 0 detik
+                        localStorage.setItem(cacheKey, JSON.stringify({hub: r.hub, contents: r.contents, globalSettings: r.globalSettings})); 
+                        renderPublicHub(r.hub, r.contents, r.globalSettings); 
+                    }
+                    else {
+                        if (!cachedData) { // Hanya tunjukkan error jika cache tidak ada
+                            document.getElementById('pubTitle').innerText = "Hub Tidak Ditemukan";
+                            document.getElementById('pubTitle').className = "text-2xl font-extrabold mb-1 tracking-tight text-gray-800";
+                            document.getElementById('pubDesc').innerText = "Halaman yang Anda cari tidak tersedia.";
+                            document.getElementById('pubLogoWrapper').innerHTML = '<i class="fa-solid fa-link-slash text-4xl text-gray-400"></i>';
+                            document.getElementById('pubLinks').innerHTML = '<a href="#" onclick="window.location.reload()" class="mt-4 px-6 py-2 bg-blue-600 text-white rounded-full font-bold shadow-md hover:bg-blue-700">Muat Ulang</a>';
+                        }
+                    }
+                } catch(e) {
+                    document.getElementById('pubLogoWrapper').classList.remove('animate-pulse', 'shadow-blue-500/50');
+                    if (!cachedData) {
+                        document.getElementById('pubTitle').innerText = "Koneksi Bermasalah";
+                        document.getElementById('pubTitle').className = "text-2xl font-extrabold mb-1 tracking-tight text-gray-800";
+                        document.getElementById('pubDesc').innerText = "Gagal memuat data. Periksa jaringan Anda.";
+                        document.getElementById('pubLogoWrapper').innerHTML = '<i class="fa-solid fa-wifi text-4xl text-red-400"></i>';
+                    }
+                }
+            } else {
+                // Dummy Mode untuk preview
+                if (!cachedData) {
+                    document.getElementById('pubLogoWrapper').classList.remove('animate-pulse', 'shadow-blue-500/50');
+                    document.getElementById('pubTitle').innerText = "Dummy Mode";
+                    document.getElementById('pubTitle').className = "text-2xl font-extrabold mb-1 tracking-tight text-gray-800";
+                    document.getElementById('pubDesc').innerText = "Sistem berjalan di preview mode.";
+                    document.getElementById('pubLogoWrapper').innerHTML = '<i class="fa-solid fa-eye text-4xl text-gray-400"></i>';
+                    document.getElementById('pubLinks').innerHTML = '';
+                }
+            }
+        }
+
+        function renderPublicHub(hub, items, globalSet) {
+            let t = {bg:'bg-blue-600', text:'text-gray-900', anim:'hover:-translate-y-1 hover:shadow-lg', shape:'rounded-full', wa:''}; try { t = JSON.parse(hub.theme||'{}'); }catch(e){}
+            
+            if(globalSet && globalSet.favicon) document.getElementById('appFavicon').href = globalSet.favicon;
+
+            document.getElementById('pubTitle').innerText = hub.title; document.getElementById('pubTitle').className = `text-2xl font-extrabold mb-1 tracking-tight ${t.text}`;
+            document.getElementById('pubDesc').innerText = hub.desc || ''; document.getElementById('pubDesc').className = `font-medium text-sm max-w-md mx-auto opacity-90 ${t.text}`;
+            
+            const logoURL = hub.logo || 'https://placehold.co/150/ffffff/3b82f6?text=Logo';
+            document.getElementById('pubLogoWrapper').innerHTML = `<img id="pubLogo" src="${logoURL}" class="w-full h-full object-cover fade-in">`;
+            
+            document.getElementById('viewPublic').className = `min-h-screen relative flex flex-col items-center py-12 px-4 overflow-x-hidden transition-colors duration-500 ${t.bg}`;
+            document.getElementById('pubFooterText').className = `inline-flex items-center gap-2 font-bold text-lg hover:scale-105 transition-transform ${t.text}`;
+            document.getElementById('pubFooterSub').className = `text-xs mt-1 font-medium ${t.text}`;
+            
+            const wa = document.getElementById('floatingWA');
+            if(t.wa) { wa.href = `https://wa.me/${t.wa.replace(/[^0-9]/g, '')}`; wa.classList.remove('hidden-spa'); } else wa.classList.add('hidden-spa');
+
+            // Render Socials
+            if(globalSet && globalSet.socials) {
+                let html = ''; const s = globalSet.socials; 
+                const map = {tiktok:'fa-tiktok', ig:'fa-instagram', yt:'fa-youtube', in:'fa-linkedin'};
+                for(let k in s) { 
+                    if(s[k]) {
+                        if(k === 'threads') {
+                            html += `<a href="${s[k]}" target="_blank" class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white flex items-center justify-center shadow-lg hover:scale-110 hover:bg-white hover:text-blue-600 transition-all"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M12.924 1.107A7.51 7.51 0 0 0 8 0 7.51 7.51 0 0 0 3.076 1.107 7.5 7.5 0 0 0 0 5.626a7.51 7.51 0 0 0 1.107 4.924 7.51 7.51 0 0 0 4.924 3.076A7.5 7.5 0 0 0 8 16a7.51 7.51 0 0 0 4.924-1.107 7.51 7.51 0 0 0 3.076-4.924A7.5 7.5 0 0 0 16 5.626a7.51 7.51 0 0 0-1.107-4.924zm-4.924 9.873a4.98 4.98 0 1 1 0-9.96 4.98 4.98 0 0 1 0 9.96z"/></svg></a>`;
+                        } else {
+                            html += `<a href="${s[k]}" target="_blank" class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white flex items-center justify-center shadow-lg hover:scale-110 hover:bg-white hover:text-blue-600 transition-all"><i class="fa-brands ${map[k]} text-xl"></i></a>`;
+                        }
+                    }
+                }
+                document.getElementById('pubSocials').innerHTML = html;
+            }
+
+            // Render Links
+            document.getElementById('pubLinks').innerHTML = items.sort((a,b)=>a.OrderIndex - b.OrderIndex).map(item => {
+                if(item.type==='header') return `<div class="w-full text-center mt-6 mb-2"><h3 class="font-extrabold text-sm uppercase tracking-wider ${t.text}">${item.title}</h3></div>`;
+                return `<a href="${item.url}" ${item.action==='blank'?'target="_blank"':''} class="w-full max-w-md block ${t.shape} bg-white text-blue-600 shadow-md ${t.anim} transition-all p-4 flex items-center gap-4 cursor-pointer group border border-transparent hover:border-blue-200 fade-in">
+                    <div class="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-inner group-hover:scale-110 transition-transform"><i class="fa-solid ${item.icon}"></i></div>
+                    <div class="flex-1 font-bold text-gray-800">${item.title}</div>
+                </a>`;
+            }).join('');
+        }
+
+        // --- MISC & INITIALIZATION ---
+        function generateQR(url) { 
+            document.getElementById('qrContainer').innerHTML = ''; 
+            new QRCode(document.getElementById('qrContainer'), { text: "https://"+url, width: 200, height: 200, colorDark : "#1e3a8a", colorLight : "#f8fafc" }); 
+            document.getElementById('qrUrlText').innerText = url;
+            openModal('modalQR'); 
+        }
+
+        function downloadQR() {
+            const canvas = document.querySelector('#qrContainer canvas');
+            if(canvas) { const link = document.createElement('a'); link.download = 'AllHub-QR.png'; link.href = canvas.toDataURL("image/png"); link.click(); }
+        }
+        
+        function initApp() {
+            let hash = window.location.hash;
+
+            // Perbaikan Routing Utama: Mengisolasi halaman Linktree agar mustahil diarahkan ke Login!
+            if (hash) {
+                let slug = hash.replace(/^#\/?/, ''); // Membersihkan karakter # dan #/
+                if (slug.startsWith('hub/')) slug = slug.replace('hub/', '');
+                
+                if (slug.length > 0 && slug !== 'admin') {
+                    loadPublicHub(slug);
+                    return; // MENGHENTIKAN logika di sini, mustahil lari ke login
+                }
+            }
+            
+            if(state.token) { switchView('admin'); navigateAdmin('dashboard'); loadHubs(); }
+            else switchView('login');
+        }
+        
+        window.addEventListener('hashchange', initApp); document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
