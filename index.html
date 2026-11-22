@@ -776,7 +776,7 @@
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-1">Slug URL</label>
                         <div class="flex border border-gray-300 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-600 focus-within:border-blue-600 transition-all bg-white">
-                            <span class="bg-gray-50 px-3 py-3 text-gray-500 text-sm border-r select-none">hub.alleducenter.com/#/</span>
+                            <span id="hubDomainPrefix" class="bg-gray-50 px-3 py-3 text-gray-500 text-sm border-r select-none">alleducenter.com/</span>
                             <input type="text" id="hubSlug" required class="w-full p-3 text-sm outline-none bg-transparent" placeholder="prime">
                         </div>
                     </div>
@@ -973,10 +973,10 @@
                         <div class="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center overflow-hidden border border-blue-200 shrink-0">${h.logo ? `<img src="${h.logo}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-globe text-blue-600 text-2xl"></i>`}</div>
                         <div class="overflow-hidden"><h3 class="font-bold text-lg text-blue-950 leading-tight truncate">${h.title}</h3><p class="text-xs text-gray-500 mt-1 font-medium truncate">/${h.slug}</p></div>
                     </div>
-                    <div class="mt-5 pt-4 border-t border-gray-100 flex justify-between items-center">
-                        <a href="#/${h.slug}" target="_blank" class="text-xs font-bold text-blue-700 hover:underline flex items-center gap-1"><i class="fa-solid fa-arrow-up-right-from-square"></i> Lihat Hub</a>
-                        <button onclick="generateQR('hub.alleducenter.com/#/${h.slug}')" class="text-gray-400 hover:text-blue-700 transition-colors bg-gray-50 hover:bg-blue-50 w-8 h-8 rounded-lg flex items-center justify-center"><i class="fa-solid fa-qrcode"></i></button>
-                    </div>
+                   <div class="mt-5 pt-4 border-t border-gray-100 flex justify-between items-center">
+    <a href="/${h.slug}" target="_blank" class="text-xs font-bold text-blue-700 hover:underline flex items-center gap-1"><i class="fa-solid fa-arrow-up-right-from-square"></i> Lihat Hub</a>
+    <button onclick="generateQR('${window.location.host}/${h.slug}')" class="text-gray-400 hover:text-blue-700 transition-colors bg-gray-50 hover:bg-blue-50 w-8 h-8 rounded-lg flex items-center justify-center"><i class="fa-solid fa-qrcode"></i></button>
+</div>
                 </div>`).join('');
         }
         
@@ -1018,8 +1018,8 @@
             state.currentHubId = id; const h = state.hubs.find(x => x.id === id);
             if(!h) return;
             document.getElementById('mgrHubTitle').innerText = h.title;
-            document.getElementById('mgrHubLink').href = `#/${h.slug}`;
-            document.getElementById('mgrHubLink').innerText = `hub.alleducenter.com/#/${h.slug}`;
+          document.getElementById('mgrHubLink').href = `/${h.slug}`;
+document.getElementById('mgrHubLink').innerText = `${window.location.host}/${h.slug}`;
             document.getElementById('mgrHubLogo').innerHTML = h.logo ? `<img src="${h.logo}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-globe text-blue-600 text-2xl"></i>`;
             navigateAdmin('content'); loadContents(id);
         }
@@ -1317,24 +1317,41 @@ if (curtainLogo) curtainLogo.src = logoURL;
             if(canvas) { const link = document.createElement('a'); link.download = 'AllHub-QR.png'; link.href = canvas.toDataURL("image/png"); link.click(); }
         }
         
-        function initApp() {
-            let hash = window.location.hash;
+       function initApp() {
+    // Otomatis tampilkan domain aktif di modal Buat Hub Baru
+    const prefixEl = document.getElementById('hubDomainPrefix');
+    if (prefixEl) prefixEl.innerText = window.location.host + '/';
 
-            if (hash) {
-                let slug = hash.replace(/^#\/?/, '');
-                if (slug.startsWith('hub/')) slug = slug.replace('hub/', '');
-                
-                if (slug.length > 0 && slug !== 'admin') {
-                    loadPublicHub(slug);
-                    return;
-                }
-            }
-            
-            if(state.token) { switchView('admin'); navigateAdmin('dashboard'); loadHubs(); }
-            else switchView('login');
-        }
-        
-        window.addEventListener('hashchange', initApp); document.addEventListener('DOMContentLoaded', initApp);
+    // 1. Cek URL Bersih (contoh: alleducenter.com/mengaji)
+    let path = window.location.pathname.replace(/^\/+|\/+$/g, '');
+    
+    // Abaikan jika membuka file index.html langsung
+    if (path === 'index.html') path = '';
+
+    // 2. Fallback: Tetap dukung link lama yang masih pakai #/
+    if (!path && window.location.hash) {
+        path = window.location.hash.replace(/^#\/?/, '').replace(/^hub\//, '');
+    }
+
+    // Jika ada slug dan bukan halaman admin -> buka Halaman Publik
+    if (path.length > 0 && path !== 'admin') {
+        loadPublicHub(path);
+        return;
+    }
+    
+    // Jika halaman utama / admin -> masuk Dashboard atau Login
+    if (state.token) {
+        switchView('admin');
+        navigateAdmin('dashboard');
+        loadHubs();
+    } else {
+        switchView('login');
+    }
+}
+
+window.addEventListener('popstate', initApp);
+window.addEventListener('hashchange', initApp);
+document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
