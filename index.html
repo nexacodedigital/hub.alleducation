@@ -49,7 +49,56 @@
         .loader-white { border-top: 3px solid #fff; border-color: rgba(255,255,255,0.3); }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* ================= SCENERY ALAM: MATAHARI, AWAN, POHON BESAR ================= */
+        /* ================= WELCOME CURTAIN (TIRAI PEMBUKA SEKALI SAJA) ================= */
+        #welcomeCurtain {
+            position: fixed;
+            inset: 0;
+            z-index: 80;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            pointer-events: auto;
+        }
+        .curtain-panel {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 51%;
+            background: linear-gradient(180deg, #0c2d64 0%, #071b3d 55%, #041026 100%);
+            transition: transform 0.95s cubic-bezier(0.77, 0, 0.175, 1);
+            z-index: 1;
+        }
+        .curtain-left {
+            left: 0;
+            border-right: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 10px 0 35px rgba(0, 0, 0, 0.45);
+        }
+        .curtain-right {
+            right: 0;
+            border-left: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: -10px 0 35px rgba(0, 0, 0, 0.45);
+        }
+        .curtain-card {
+            position: relative;
+            z-index: 2;
+            transition: opacity 0.45s ease, transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        #welcomeCurtain.is-opening {
+            pointer-events: none;
+        }
+        #welcomeCurtain.is-opening .curtain-left {
+            transform: translateX(-105%);
+        }
+        #welcomeCurtain.is-opening .curtain-right {
+            transform: translateX(105%);
+        }
+        #welcomeCurtain.is-opening .curtain-card {
+            opacity: 0;
+            transform: scale(0.88) translateY(-14px);
+        }
+
+        /* ================= SCENERY ALAM: MATAHARI, AWAN, POHON RESPONSIF ================= */
         .nature-stage {
             position: fixed;
             inset: 0;
@@ -58,38 +107,45 @@
             overflow: hidden;
         }
 
-        /* Matahari Bersinar */
+        /* Matahari Bersinar (Posisi di Langit Terbuka, Tidak Terhalang Pohon) */
         .sun-wrapper {
             position: absolute;
-            top: 24px;
-            left: 7%;
-            width: 96px;
-            height: 96px;
+            top: 16px;
+            left: 20%;
+            width: 72px;
+            height: 72px;
             display: flex;
             align-items: center;
             justify-content: center;
+            z-index: 4;
         }
         .sun-halo {
             position: absolute;
-            width: 170px;
-            height: 170px;
+            width: 135px;
+            height: 135px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(253, 224, 71, 0.45) 0%, rgba(251, 146, 60, 0.18) 45%, transparent 72%);
+            background: radial-gradient(circle, rgba(253, 224, 71, 0.48) 0%, rgba(251, 146, 60, 0.2) 45%, transparent 72%);
             animation: sunPulse 4.5s ease-in-out infinite;
         }
         .sun-rays {
             position: absolute;
-            width: 112px;
-            height: 112px;
+            width: 86px;
+            height: 86px;
             animation: sunSpin 26s linear infinite;
         }
         .sun-core {
             position: relative;
-            width: 54px;
-            height: 54px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
             background: radial-gradient(circle at 35% 35%, #fef9c3 0%, #facc15 55%, #f97316 100%);
-            box-shadow: 0 0 32px rgba(250, 204, 21, 0.85), 0 0 60px rgba(249, 115, 22, 0.45);
+            box-shadow: 0 0 28px rgba(250, 204, 21, 0.85), 0 0 55px rgba(249, 115, 22, 0.45);
+        }
+        @media (min-width: 768px) {
+            .sun-wrapper { top: 26px; left: 24%; width: 92px; height: 92px; }
+            .sun-halo { width: 170px; height: 170px; }
+            .sun-rays { width: 112px; height: 112px; }
+            .sun-core { width: 52px; height: 52px; }
         }
         @keyframes sunSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes sunPulse { 0%, 100% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.16); opacity: 1; } }
@@ -100,21 +156,21 @@
             opacity: 0.22;
             filter: drop-shadow(0 6px 12px rgba(0,0,0,0.15));
         }
-        .cloud-1 { top: 28px; width: 150px; animation: cloudDrift 34s linear infinite; }
-        .cloud-2 { top: 82px; width: 115px; opacity: 0.16; animation: cloudDrift 48s linear infinite -18s; }
-        .cloud-3 { top: 48px; width: 185px; opacity: 0.14; animation: cloudDrift 56s linear infinite -32s; }
+        .cloud-1 { top: 28px; width: 135px; animation: cloudDrift 34s linear infinite; }
+        .cloud-2 { top: 82px; width: 105px; opacity: 0.16; animation: cloudDrift 48s linear infinite -18s; }
+        .cloud-3 { top: 48px; width: 165px; opacity: 0.14; animation: cloudDrift 56s linear infinite -32s; }
         @keyframes cloudDrift {
             0% { transform: translateX(-220px); }
             100% { transform: translateX(calc(100vw + 240px)); }
         }
 
-        /* Pohon & Ranting Besar di Samping Kiri & Kanan */
+        /* Pohon & Ranting Samping (Responsif HP & Desktop, Tidak Terpotong Aneh) */
         .tree-side-left {
             position: fixed;
-            left: -18px;
+            left: 0;
             top: 0;
             height: 100vh;
-            width: 150px;
+            width: 78px;
             pointer-events: none;
             z-index: 2;
             transform-origin: left center;
@@ -122,28 +178,31 @@
         }
         .tree-side-right {
             position: fixed;
-            right: -18px;
+            right: 0;
             top: 0;
             height: 100vh;
-            width: 150px;
+            width: 78px;
             pointer-events: none;
             z-index: 2;
             transform-origin: right center;
             animation: treeSwayRight 6.5s ease-in-out infinite;
         }
-        @media (min-width: 768px) {
-            .tree-side-left, .tree-side-right { width: 250px; }
+        @media (min-width: 640px) {
+            .tree-side-left, .tree-side-right { width: 130px; }
+        }
+        @media (min-width: 1024px) {
+            .tree-side-left, .tree-side-right { width: 220px; }
         }
         @media (min-width: 1280px) {
-            .tree-side-left, .tree-side-right { width: 320px; }
+            .tree-side-left, .tree-side-right { width: 265px; }
         }
         @keyframes treeSwayLeft {
             0%, 100% { transform: rotate(0deg); }
-            50% { transform: rotate(1.2deg); }
+            50% { transform: rotate(1.1deg); }
         }
         @keyframes treeSwayRight {
             0%, 100% { transform: rotate(0deg); }
-            50% { transform: rotate(-1.2deg); }
+            50% { transform: rotate(-1.1deg); }
         }
 
         /* ================= 3 BURUNG OWL TERBANG BOLAK-BALIK ================= */
@@ -162,47 +221,47 @@
 
         /* Owl 1: Utama (Kiri -> Kanan -> Kiri) */
         .owl-1 {
-            width: 58px;
-            height: 58px;
+            width: 54px;
+            height: 54px;
             animation: owlLoop1 13s ease-in-out infinite;
         }
         @keyframes owlLoop1 {
             0%   { left: 4%; top: 92px; transform: scaleX(1) rotate(5deg); }
             24%  { left: 46%; top: 44px; transform: scaleX(1) rotate(-6deg); }
-            48%  { left: calc(96% - 62px); top: 102px; transform: scaleX(1) rotate(4deg); }
-            50%  { left: calc(96% - 62px); top: 102px; transform: scaleX(-1) rotate(4deg); }
+            48%  { left: calc(96% - 58px); top: 102px; transform: scaleX(1) rotate(4deg); }
+            50%  { left: calc(96% - 58px); top: 102px; transform: scaleX(-1) rotate(4deg); }
             74%  { left: 50%; top: 56px; transform: scaleX(-1) rotate(-6deg); }
             98%  { left: 4%; top: 92px; transform: scaleX(-1) rotate(5deg); }
             100% { left: 4%; top: 92px; transform: scaleX(1) rotate(5deg); }
         }
 
-        /* Owl 2: Sedang (Kanan -> Kiri -> Kanan, Lebih Tinggi) */
+        /* Owl 2: Sedang (Kanan -> Kiri -> Kanan) */
         .owl-2 {
-            width: 44px;
-            height: 44px;
+            width: 42px;
+            height: 42px;
             animation: owlLoop2 16s ease-in-out infinite -4s;
         }
         @keyframes owlLoop2 {
-            0%   { left: calc(95% - 48px); top: 42px; transform: scaleX(-1) rotate(4deg); }
+            0%   { left: calc(95% - 46px); top: 42px; transform: scaleX(-1) rotate(4deg); }
             25%  { left: 52%; top: 20px; transform: scaleX(-1) rotate(-5deg); }
             48%  { left: 5%; top: 58px; transform: scaleX(-1) rotate(5deg); }
             50%  { left: 5%; top: 58px; transform: scaleX(1) rotate(5deg); }
             75%  { left: 48%; top: 26px; transform: scaleX(1) rotate(-5deg); }
-            98%  { left: calc(95% - 48px); top: 42px; transform: scaleX(1) rotate(4deg); }
-            100% { left: calc(95% - 48px); top: 42px; transform: scaleX(-1) rotate(4deg); }
+            98%  { left: calc(95% - 46px); top: 42px; transform: scaleX(1) rotate(4deg); }
+            100% { left: calc(95% - 46px); top: 42px; transform: scaleX(-1) rotate(4deg); }
         }
 
-        /* Owl 3: Kecil Lincah (Kiri -> Kanan -> Kiri, Agak Rendah) */
+        /* Owl 3: Kecil Lincah */
         .owl-3 {
-            width: 38px;
-            height: 38px;
+            width: 36px;
+            height: 36px;
             animation: owlLoop3 19s ease-in-out infinite -9s;
         }
         @keyframes owlLoop3 {
             0%   { left: 6%; top: 158px; transform: scaleX(1) rotate(-4deg); }
             25%  { left: 44%; top: 118px; transform: scaleX(1) rotate(6deg); }
-            48%  { left: calc(94% - 42px); top: 165px; transform: scaleX(1) rotate(-3deg); }
-            50%  { left: calc(94% - 42px); top: 165px; transform: scaleX(-1) rotate(-3deg); }
+            48%  { left: calc(94% - 40px); top: 165px; transform: scaleX(1) rotate(-3deg); }
+            50%  { left: calc(94% - 40px); top: 165px; transform: scaleX(-1) rotate(-3deg); }
             75%  { left: 54%; top: 124px; transform: scaleX(-1) rotate(6deg); }
             98%  { left: 6%; top: 158px; transform: scaleX(-1) rotate(-4deg); }
             100% { left: 6%; top: 158px; transform: scaleX(1) rotate(-4deg); }
@@ -423,7 +482,6 @@
                                     <div class="flex items-center border rounded-lg overflow-hidden focus-within:ring-2 focus-within:border-blue-600 ring-blue-600 transition-all"><span class="bg-gray-50 px-4 py-3 text-gray-600 border-r w-12 text-center"><i class="fa-brands fa-instagram"></i></span><input type="url" id="gIg" placeholder="URL Instagram" class="w-full p-3 text-sm outline-none bg-white"></div>
                                     <div class="flex items-center border rounded-lg overflow-hidden focus-within:ring-2 focus-within:border-blue-600 ring-blue-600 transition-all"><span class="bg-gray-50 px-4 py-3 text-gray-600 border-r w-12 text-center"><i class="fa-brands fa-youtube"></i></span><input type="url" id="gYt" placeholder="URL YouTube" class="w-full p-3 text-sm outline-none bg-white"></div>
                                     <div class="flex items-center border rounded-lg overflow-hidden focus-within:ring-2 focus-within:border-blue-600 ring-blue-600 transition-all"><span class="bg-gray-50 px-4 py-3 text-gray-600 border-r w-12 text-center"><i class="fa-brands fa-linkedin"></i></span><input type="url" id="gIn" placeholder="URL LinkedIn" class="w-full p-3 text-sm outline-none bg-white"></div>
-                                    <!-- Logo X / Twitter Resmi -->
                                     <div class="flex items-center border rounded-lg overflow-hidden focus-within:ring-2 focus-within:border-blue-600 ring-blue-600 transition-all"><span class="bg-gray-50 px-4 py-3 text-gray-800 border-r w-12 text-center"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="mx-auto" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></span><input type="url" id="gThreads" placeholder="URL X (Twitter)" class="w-full p-3 text-sm outline-none bg-white"></div>
                                 </div>
                             </div>
@@ -439,13 +497,45 @@
         <!-- ================= PUBLIC VIEW (PRIME Premium Nature Linktree) ================= -->
         <div id="viewPublic" class="min-h-screen hidden-spa relative flex flex-col items-center py-12 px-4 overflow-x-hidden transition-colors duration-500 bg-prime-premium text-white">
             
+            <!-- WELCOME CURTAIN (MUNCUL SEKALI DI AWAL, LALU TERBUKA SEPERTI TIRAI) -->
+            <div id="welcomeCurtain" class="hidden-spa cursor-pointer" onclick="openWelcomeCurtain()">
+                <div class="curtain-panel curtain-left"></div>
+                <div class="curtain-panel curtain-right"></div>
+                
+                <div class="curtain-card w-[90%] max-w-md px-2">
+                    <div class="bg-gradient-to-br from-white via-sky-50 to-white border-2 border-sky-200 rounded-3xl p-6 shadow-[0_25px_60px_rgba(0,0,0,0.55)] text-center relative overflow-hidden">
+                        <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 via-sky-400 to-orange-500"></div>
+                        <!-- Maskot Owl PRIME -->
+                        <div class="w-20 h-20 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-blue-50 to-sky-100 border border-blue-200 flex items-center justify-center p-2 shadow-inner">
+                            <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-sm" fill="none">
+                                <defs><linearGradient id="owlCurtainGrad" x1="20" y1="10" x2="80" y2="90" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#38bdf8"/><stop offset="50%" stop-color="#2563eb"/><stop offset="100%" stop-color="#1e3a8a"/></linearGradient></defs>
+                                <path d="M24 20 L36 28 Q50 24 64 28 L76 20 C83 38, 83 78, 50 90 C17 78, 17 38, 24 20 Z" fill="url(#owlCurtainGrad)"/>
+                                <path d="M29 42 C29 32, 47 32, 50 40 C53 32, 71 32, 71 42 C71 56, 57 63, 50 63 C43 63, 29 56, 29 42 Z" fill="#ffffff"/>
+                                <circle cx="40" cy="45" r="6.8" fill="#0f172a"/><circle cx="42" cy="43" r="2.2" fill="#ffffff"/>
+                                <circle cx="60" cy="45" r="6.8" fill="#0f172a"/><circle cx="62" cy="43" r="2.2" fill="#ffffff"/>
+                                <polygon points="46,51 54,51 50,60" fill="#f97316"/>
+                            </svg>
+                        </div>
+                        <h2 class="font-extrabold text-lg md:text-xl text-prime-navy leading-snug">
+                            Hallo Owlstars! 👋<br>Bagaimana kabarnya hari ini?
+                        </h2>
+                        <p class="text-xs md:text-sm text-slate-600 mt-2 leading-relaxed font-medium">
+                            Yuk kepoin berbagai program seru dari <span class="font-extrabold text-orange-600">All Education Indonesia</span>! 🚀
+                        </p>
+                        <div class="mt-4 inline-flex items-center gap-1.5 text-[11px] font-bold text-blue-600 animate-pulse">
+                            <span>Membuka halaman...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 1. LANGIT ALAM: MATAHARI BERSINAR & AWAN BERJALAN -->
             <div class="nature-stage" aria-hidden="true">
-                <!-- Matahari Bersinar -->
+                <!-- Matahari Bersinar (Di Ruang Langit Terbuka, Bebas dari Pohon) -->
                 <div class="sun-wrapper">
                     <div class="sun-halo"></div>
                     <svg class="sun-rays" viewBox="0 0 120 120" fill="none">
-                        <g stroke="#fde047" stroke-width="3" stroke-linecap="round" opacity="0.75">
+                        <g stroke="#fde047" stroke-width="3" stroke-linecap="round" opacity="0.8">
                             <line x1="60" y1="6" x2="60" y2="18"/>
                             <line x1="60" y1="102" x2="60" y2="114"/>
                             <line x1="6" y1="60" x2="18" y2="60"/>
@@ -459,15 +549,13 @@
                     <div class="sun-core"></div>
                 </div>
 
-                <!-- Awan Berjalan 1 -->
+                <!-- Awan Berjalan -->
                 <svg class="cloud cloud-1" viewBox="0 0 200 80" fill="white">
                     <path d="M45 68 H160 C178 68 190 56 190 42 C190 29 180 18 166 17 C160 6 146 0 132 2 C119 4 108 12 103 23 C96 18 86 16 76 19 C64 23 56 33 55 44 C41 44 30 53 30 62 C30 66 37 68 45 68 Z"/>
                 </svg>
-                <!-- Awan Berjalan 2 -->
                 <svg class="cloud cloud-2" viewBox="0 0 200 80" fill="white">
                     <path d="M35 66 H155 C173 66 185 55 185 42 C185 30 174 20 160 20 C154 9 140 4 126 7 C115 9 106 16 101 25 C92 20 79 21 71 29 C65 34 62 41 62 47 C47 47 35 54 35 66 Z"/>
                 </svg>
-                <!-- Awan Berjalan 3 -->
                 <svg class="cloud cloud-3" viewBox="0 0 200 80" fill="white">
                     <path d="M40 68 H165 C182 68 194 57 194 44 C194 31 182 20 167 20 C161 8 145 2 130 5 C117 8 107 16 102 26 C92 19 77 20 68 29 C60 36 58 44 58 50 C44 50 34 57 34 65 C34 67 37 68 40 68 Z"/>
                 </svg>
@@ -477,60 +565,58 @@
                 <div class="absolute bottom-0 right-0 w-[400px] h-[400px] bg-orange-500/10 rounded-full blur-[120px]"></div>
             </div>
 
-            <!-- 2. POHON BESAR & RANTING RINDANG DI SAMPING KIRI -->
-            <svg class="tree-side-left" viewBox="0 0 280 900" preserveAspectRatio="xMinYMin slice" fill="none" aria-hidden="true">
-                <!-- Batang Utama Kiri -->
-                <path d="M-20 920 C18 760, 28 540, 22 310 C18 160, 32 50, -10 -20 L-40 -20 L-40 920 Z" fill="#3d2514"/>
-                <path d="M-15 920 C14 760, 22 540, 16 310 C14 170, 24 60, -12 -20" stroke="#5c3a21" stroke-width="10"/>
-                <!-- Ranting Besar Atas -->
-                <path d="M18 145 Q 110 115, 215 72" stroke="#4a2e19" stroke-width="16" stroke-linecap="round"/>
-                <path d="M95 112 Q 145 135, 195 128" stroke="#5c3a21" stroke-width="9" stroke-linecap="round"/>
-                <!-- Ranting Besar Tengah -->
-                <path d="M22 390 Q 95 360, 175 325" stroke="#4a2e19" stroke-width="13" stroke-linecap="round"/>
+            <!-- 2. POHON SAMPING KIRI (PROPORSIONAL UNTUK HP & LAPTOP) -->
+            <svg class="tree-side-left" viewBox="0 0 240 900" preserveAspectRatio="xMinYMid slice" fill="none" aria-hidden="true">
+                <path d="M-15 920 C12 760, 20 540, 16 310 C12 160, 22 50, -8 -20 L-35 -20 L-35 920 Z" fill="#3d2514"/>
+                <path d="M-10 920 C10 760, 16 540, 12 310 C10 170, 18 60, -10 -20" stroke="#5c3a21" stroke-width="8"/>
+                <!-- Ranting Atas -->
+                <path d="M12 155 Q 85 130, 175 95" stroke="#4a2e19" stroke-width="14" stroke-linecap="round"/>
+                <path d="M75 128 Q 115 148, 155 142" stroke="#5c3a21" stroke-width="8" stroke-linecap="round"/>
+                <!-- Ranting Tengah -->
+                <path d="M16 420 Q 75 395, 145 365" stroke="#4a2e19" stroke-width="12" stroke-linecap="round"/>
                 <!-- Ranting Bawah -->
-                <path d="M16 660 Q 80 635, 145 610" stroke="#4a2e19" stroke-width="11" stroke-linecap="round"/>
-                <!-- Dedaunan Rindang Atas -->
-                <circle cx="48" cy="70" r="68" fill="#14532d" opacity="0.92"/>
-                <circle cx="118" cy="58" r="56" fill="#166534" opacity="0.9"/>
-                <circle cx="185" cy="72" r="46" fill="#15803d" opacity="0.88"/>
-                <circle cx="222" cy="74" r="34" fill="#22c55e" opacity="0.82"/>
-                <circle cx="155" cy="126" r="38" fill="#16a34a" opacity="0.85"/>
-                <circle cx="88" cy="128" r="44" fill="#15803d" opacity="0.85"/>
+                <path d="M12 690 Q 65 665, 120 645" stroke="#4a2e19" stroke-width="10" stroke-linecap="round"/>
+                <!-- Dedaunan Atas -->
+                <circle cx="38" cy="88" r="56" fill="#14532d" opacity="0.92"/>
+                <circle cx="96" cy="78" r="46" fill="#166534" opacity="0.9"/>
+                <circle cx="152" cy="94" r="38" fill="#15803d" opacity="0.88"/>
+                <circle cx="182" cy="96" r="28" fill="#22c55e" opacity="0.82"/>
+                <circle cx="128" cy="140" r="32" fill="#16a34a" opacity="0.85"/>
+                <circle cx="72" cy="142" r="36" fill="#15803d" opacity="0.85"/>
                 <!-- Dedaunan Tengah -->
-                <circle cx="95" cy="340" r="46" fill="#14532d" opacity="0.88"/>
-                <circle cx="152" cy="326" r="38" fill="#16a34a" opacity="0.84"/>
-                <circle cx="188" cy="324" r="24" fill="#22c55e" opacity="0.78"/>
+                <circle cx="78" cy="380" r="38" fill="#14532d" opacity="0.88"/>
+                <circle cx="126" cy="366" r="32" fill="#16a34a" opacity="0.84"/>
+                <circle cx="156" cy="364" r="20" fill="#22c55e" opacity="0.78"/>
                 <!-- Dedaunan Bawah -->
-                <circle cx="72" cy="625" r="42" fill="#14532d" opacity="0.86"/>
-                <circle cx="128" cy="610" r="32" fill="#15803d" opacity="0.82"/>
+                <circle cx="60" cy="658" r="36" fill="#14532d" opacity="0.86"/>
+                <circle cx="108" cy="645" r="26" fill="#15803d" opacity="0.82"/>
             </svg>
 
-            <!-- 3. POHON BESAR & RANTING RINDANG DI SAMPING KANAN -->
-            <svg class="tree-side-right" viewBox="0 0 280 900" preserveAspectRatio="xMaxYMin slice" fill="none" aria-hidden="true">
-                <!-- Batang Utama Kanan -->
-                <path d="M300 920 C262 760, 252 540, 258 310 C262 160, 248 50, 290 -20 L320 -20 L320 920 Z" fill="#3d2514"/>
-                <path d="M295 920 C266 760, 258 540, 264 310 C266 170, 256 60, 292 -20" stroke="#5c3a21" stroke-width="10"/>
-                <!-- Ranting Besar Atas -->
-                <path d="M262 155 Q 170 125, 65 82" stroke="#4a2e19" stroke-width="16" stroke-linecap="round"/>
-                <path d="M185 122 Q 135 145, 85 138" stroke="#5c3a21" stroke-width="9" stroke-linecap="round"/>
-                <!-- Ranting Besar Tengah -->
-                <path d="M258 410 Q 185 380, 105 345" stroke="#4a2e19" stroke-width="13" stroke-linecap="round"/>
+            <!-- 3. POHON SAMPING KANAN (PROPORSIONAL UNTUK HP & LAPTOP) -->
+            <svg class="tree-side-right" viewBox="0 0 240 900" preserveAspectRatio="xMaxYMid slice" fill="none" aria-hidden="true">
+                <path d="M255 920 C228 760, 220 540, 224 310 C228 160, 218 50, 248 -20 L275 -20 L275 920 Z" fill="#3d2514"/>
+                <path d="M250 920 C230 760, 224 540, 228 310 C230 170, 222 60, 250 -20" stroke="#5c3a21" stroke-width="8"/>
+                <!-- Ranting Atas -->
+                <path d="M228 165 Q 155 140, 65 105" stroke="#4a2e19" stroke-width="14" stroke-linecap="round"/>
+                <path d="M165 138 Q 125 158, 85 152" stroke="#5c3a21" stroke-width="8" stroke-linecap="round"/>
+                <!-- Ranting Tengah -->
+                <path d="M224 440 Q 165 415, 95 385" stroke="#4a2e19" stroke-width="12" stroke-linecap="round"/>
                 <!-- Ranting Bawah -->
-                <path d="M264 680 Q 200 655, 135 630" stroke="#4a2e19" stroke-width="11" stroke-linecap="round"/>
-                <!-- Dedaunan Rindang Atas -->
-                <circle cx="232" cy="80" r="68" fill="#14532d" opacity="0.92"/>
-                <circle cx="162" cy="68" r="56" fill="#166534" opacity="0.9"/>
-                <circle cx="95" cy="82" r="46" fill="#15803d" opacity="0.88"/>
-                <circle cx="58" cy="84" r="34" fill="#22c55e" opacity="0.82"/>
-                <circle cx="125" cy="136" r="38" fill="#16a34a" opacity="0.85"/>
-                <circle cx="192" cy="138" r="44" fill="#15803d" opacity="0.85"/>
+                <path d="M228 710 Q 175 685, 120 665" stroke="#4a2e19" stroke-width="10" stroke-linecap="round"/>
+                <!-- Dedaunan Atas -->
+                <circle cx="202" cy="98" r="56" fill="#14532d" opacity="0.92"/>
+                <circle cx="144" cy="88" r="46" fill="#166534" opacity="0.9"/>
+                <circle cx="88" cy="104" r="38" fill="#15803d" opacity="0.88"/>
+                <circle cx="58" cy="106" r="28" fill="#22c55e" opacity="0.82"/>
+                <circle cx="112" cy="150" r="32" fill="#16a34a" opacity="0.85"/>
+                <circle cx="168" cy="152" r="36" fill="#15803d" opacity="0.85"/>
                 <!-- Dedaunan Tengah -->
-                <circle cx="185" cy="360" r="46" fill="#14532d" opacity="0.88"/>
-                <circle cx="128" cy="346" r="38" fill="#16a34a" opacity="0.84"/>
-                <circle cx="92" cy="344" r="24" fill="#22c55e" opacity="0.78"/>
+                <circle cx="162" cy="400" r="38" fill="#14532d" opacity="0.88"/>
+                <circle cx="114" cy="386" r="32" fill="#16a34a" opacity="0.84"/>
+                <circle cx="84" cy="384" r="20" fill="#22c55e" opacity="0.78"/>
                 <!-- Dedaunan Bawah -->
-                <circle cx="208" cy="645" r="42" fill="#14532d" opacity="0.86"/>
-                <circle cx="152" cy="630" r="32" fill="#15803d" opacity="0.82"/>
+                <circle cx="180" cy="678" r="36" fill="#14532d" opacity="0.86"/>
+                <circle cx="132" cy="665" r="26" fill="#15803d" opacity="0.82"/>
             </svg>
 
             <!-- 4. 3 BURUNG OWL PRIME TERBANG BOLAK-BALIK -->
@@ -582,7 +668,7 @@
             </div>
 
             <!-- KONTEN UTAMA PUBLIK -->
-            <div class="relative z-20 w-full max-w-lg flex flex-col items-center mt-4">
+            <div class="relative z-20 w-full max-w-lg flex flex-col items-center mt-6">
                 
                 <!-- Wrapper Logo -->
                 <div id="pubLogoWrapper" class="w-24 h-24 md:w-28 md:h-28 rounded-full border-4 border-white shadow-2xl overflow-hidden mb-4 bg-white shrink-0 slide-up fade-in flex items-center justify-center transition-all duration-300 ring-4 ring-sky-400/35">
@@ -590,45 +676,16 @@
                 </div>
                 
                 <!-- Judul & Deskripsi Lembaga -->
-                <div class="text-center mb-5 px-4 w-full slide-up fade-in" style="animation-delay: 0.1s;">
+                <div class="text-center mb-6 px-4 w-full slide-up fade-in" style="animation-delay: 0.1s;">
                     <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/15 border border-white/25 text-amber-300 text-[11px] font-extrabold tracking-wider uppercase mb-2 backdrop-blur-md shadow-sm">
                         <i class="fa-solid fa-sparkles text-amber-300"></i> Official Smart Hub
                     </div>
                     <h1 id="pubTitle" class="text-2xl md:text-3xl font-extrabold mb-1.5 tracking-tight text-white drop-shadow-sm">Mohon Tunggu...</h1>
                     <p id="pubDesc" class="font-medium text-sm max-w-md mx-auto text-blue-100/95">Memuat informasi program terbaik untukmu...</p>
                 </div>
-
-                <!-- KARTU SAPAAN OWLSTARS (KONTRAS PREMIUM ANTI-NYARU + MASKOT OWL PRIME) -->
-                <div id="owlstarsGreeting" class="w-full max-w-md mb-6 slide-up fade-in" style="animation-delay: 0.15s;">
-                    <div class="bg-gradient-to-r from-white via-sky-50 to-white border-2 border-sky-200/90 rounded-2xl p-4 shadow-[0_14px_35px_rgba(3,12,30,0.45)] relative overflow-hidden">
-                        <!-- Aksen Garis Samping Kiri -->
-                        <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-blue-600 via-sky-500 to-orange-500"></div>
-                        <div class="flex items-center gap-3.5 pl-2 relative z-10">
-                            <!-- Maskot SVG Owl PRIME (Sama seperti Logo & Owl Terbang) -->
-                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-50 to-sky-100 border border-blue-200 flex items-center justify-center shrink-0 shadow-inner p-1.5">
-                                <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-sm" fill="none">
-                                    <defs><linearGradient id="owlCardGrad" x1="20" y1="10" x2="80" y2="90" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#38bdf8"/><stop offset="50%" stop-color="#2563eb"/><stop offset="100%" stop-color="#1e3a8a"/></linearGradient></defs>
-                                    <path d="M24 20 L36 28 Q50 24 64 28 L76 20 C83 38, 83 78, 50 90 C17 78, 17 38, 24 20 Z" fill="url(#owlCardGrad)"/>
-                                    <path d="M29 42 C29 32, 47 32, 50 40 C53 32, 71 32, 71 42 C71 56, 57 63, 50 63 C43 63, 29 56, 29 42 Z" fill="#ffffff"/>
-                                    <circle cx="40" cy="45" r="6.8" fill="#0f172a"/><circle cx="42" cy="43" r="2.2" fill="#ffffff"/>
-                                    <circle cx="60" cy="45" r="6.8" fill="#0f172a"/><circle cx="62" cy="43" r="2.2" fill="#ffffff"/>
-                                    <polygon points="46,51 54,51 50,60" fill="#f97316"/>
-                                </svg>
-                            </div>
-                            <div class="text-left">
-                                <h2 class="font-extrabold text-sm md:text-[15px] text-prime-navy leading-snug">
-                                    Hallo Owlstars! Bagaimana kabarnya hari ini? 👋
-                                </h2>
-                                <p class="text-xs text-slate-600 mt-1 leading-relaxed font-medium">
-                                    Yuk kepoin berbagai program seru, tryout, dan kelas unggulan dari <span class="font-extrabold text-orange-600">All Education</span> di bawah ini! 🚀
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 
                 <!-- Links Container -->
-                <div id="pubLinks" class="flex-1 space-y-3.5 flex flex-col items-center w-full slide-up min-h-[200px]" style="animation-delay: 0.2s;">
+                <div id="pubLinks" class="flex-1 space-y-3.5 flex flex-col items-center w-full slide-up min-h-[200px]" style="animation-delay: 0.15s;">
                     <div class="flex flex-col items-center justify-center mt-10 mb-10 fade-in">
                         <div class="relative w-16 h-16 flex items-center justify-center">
                             <div class="absolute inset-0 border-4 border-white/20 rounded-full"></div>
@@ -793,6 +850,9 @@
         const LOGO_LOADING_MANUAL = "https://iili.io/CMttawP.md.png"; 
         const DEFAULT_WA_NUMBER = "6281234567890";
 
+        let curtainPlayed = false;
+        let curtainTimer = null;
+
         let state = { 
             token: localStorage.getItem('ah_token'), 
             user: JSON.parse(localStorage.getItem('ah_user')), 
@@ -804,6 +864,28 @@
             deleteId: null,
             editingContentId: null
         };
+
+        // --- WELCOME CURTAIN LOGIC (SEKALI SAJA SAAT PERTAMA MASUK) ---
+        function playWelcomeCurtainOnce() {
+            if (curtainPlayed) return;
+            curtainPlayed = true;
+            const curtain = document.getElementById('welcomeCurtain');
+            if (!curtain) return;
+            curtain.classList.remove('hidden-spa', 'is-opening');
+            curtainTimer = setTimeout(() => {
+                openWelcomeCurtain();
+            }, 2200);
+        }
+
+        function openWelcomeCurtain() {
+            if (curtainTimer) { clearTimeout(curtainTimer); curtainTimer = null; }
+            const curtain = document.getElementById('welcomeCurtain');
+            if (!curtain || curtain.classList.contains('is-opening')) return;
+            curtain.classList.add('is-opening');
+            setTimeout(() => {
+                curtain.classList.add('hidden-spa');
+            }, 1000);
+        }
 
         // --- UTILS ---
         function showToast(msg, type='success') {
@@ -1117,6 +1199,7 @@
         // --- HALAMAN PUBLIK ---
         async function loadPublicHub(slug) {
             switchView('public');
+            playWelcomeCurtainOnce();
             
             const cacheKey = 'ah_pub_cache_' + slug;
             const cachedData = localStorage.getItem(cacheKey);
